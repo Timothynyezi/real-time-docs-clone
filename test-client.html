@@ -2,11 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realtime Document Test Client</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-    
+
+<h2>Realtime Document Test Client</h2>
+
+<label>Document ID:</label>
+<input id="docId" value="doc1" />
+
+<button onclick="joinDocument()">Join Document</button>
+
+<h3>Editor</h3>
+<textarea id="editor"></textarea>
+
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("http://localhost:5010/hubs/document")
+        .build();
+
+    const editor = document.getElementById("editor");
+    const docInput = document.getElementById("docId");
+    let currentDocId = null;
+    let isRemoteUpdate = false;
+
+    // Start connection
+    connection.start().then(() => {
+        console.log("Connected to hub");
+    }).catch(err => console.error(err));
+
+    // Join a document group
+    function joinDocument() {
+        currentDocId = docInput.value;
+        connection.invoke("JoinDocument", currentDocId);
+        console.log("Joined document:", currentDocId);
+    }
+
+    // Listen for updates from other clients
+    connection.on("ReceiveUpdate", (documentId, content) => {
+        if (documentId === currentDocId) {
+            isRemoteUpdate = true;
+            editor.value = content;
+            isRemoteUpdate = false;
+        }
+    });
+
+    // Send updates when typing
+    editor.addEventListener("input", () => {
+        if (currentDocId && !isRemoteUpdate) {
+            connection.invoke("SendUpdate", currentDocId, editor.value);
+        }
+    });
+</script>
+
 </body>
 </html>
