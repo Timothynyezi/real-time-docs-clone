@@ -1,6 +1,6 @@
-@RealtimeDocsClone.Api_HostAddress = http://localhost:5225
+@Host = http://localhost:5225
 
-GET {{RealtimeDocsClone.Api_HostAddress}}/weatherforecast/
+GET {{Host}}/weatherforecast/
 Accept: application/json
 
 ###
