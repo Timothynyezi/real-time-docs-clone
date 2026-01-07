@@ -5,6 +5,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+// Allow browser-based test clients during development. This is intentionally permissive for local dev only.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevAllowAny", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -13,6 +23,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseCors("DevAllowAny");
     app.UseSwagger();
     app.UseSwaggerUI();
 }
